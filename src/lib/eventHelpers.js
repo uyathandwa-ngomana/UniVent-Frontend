@@ -42,6 +42,12 @@ export function normalizeEvent(raw) {
     (typeof raw.organizer === "string" ? raw.organizer : "") ??
     "Organizer TBA";
 
+  const organizerEmail =
+    raw.organizer?.email ??
+    raw.organizerEmail ??
+    raw.contactEmail ??
+    "";
+
   // Prefer real remaining-spot fields. Do not treat maxAttendees as remaining.
   const spotsRemaining =
     raw.spotsRemaining ?? raw.availableSpots ?? null;
@@ -49,15 +55,33 @@ export function normalizeEvent(raw) {
   return {
     id,
     name: raw.name ?? raw.eventName ?? "Untitled event",
+    description: raw.description ?? raw.eventDescription ?? "",
     dateTime: raw.dateTime ?? raw.date ?? null,
     venue: venueName || "Venue TBA",
     campus: campus || "",
     organizer: organizerName,
+    organizerEmail,
     category: raw.category ?? "Social",
     spotsRemaining,
     maxAttendees: raw.maxAttendees ?? null,
     status: raw.status ?? null,
   };
+}
+
+/** Soft banner colours for the event detail header by category. */
+export function getCategoryBannerClass(category) {
+  switch (category) {
+    case "Tech":
+      return "from-[#087dbb] to-[#0a5f8f]";
+    case "Sports":
+      return "from-emerald-600 to-emerald-800";
+    case "Social":
+      return "from-amber-500 to-amber-700";
+    case "Academic":
+      return "from-indigo-600 to-indigo-800";
+    default:
+      return "from-[#087dbb] to-[#0a5f8f]";
+  }
 }
 
 export function getEventIdFromBooking(booking) {
