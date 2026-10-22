@@ -186,7 +186,7 @@ npm install
 Create a `.env` file in the project root:
 
 ```env
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8080
 ```
 
 The `.env` file should not be committed to Git.
@@ -194,7 +194,7 @@ The `.env` file should not be committed to Git.
 A `.env.example` file should be maintained in the repository:
 
 ```env
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8080
 ```
 
 The backend must be running for API functionality to work.
@@ -871,7 +871,7 @@ Create your environment file:
 Add:
 
 ```env
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8080
 ```
 
 Start the application:

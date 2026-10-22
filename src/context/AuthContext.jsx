@@ -1,8 +1,5 @@
-import { createContext, useState, useEffect } from "react";
-
-
-export const AuthContext = createContext(null);
-
+import { useState } from "react";
+import { AuthContext, getHomePathForRole } from "./auth-context";
 
 export function AuthProvider({ children }) {
 
@@ -49,13 +46,7 @@ export function AuthProvider({ children }) {
 
   
   const getHomePath = () => {
-    if (!user) return "/login";
-    switch (user.role) {
-      case "STUDENT": return "/student";
-      case "ORGANIZER": return "/organizer";
-      case "ADMIN": return "/admin";
-      default: return "/login";
-    }
+    return getHomePathForRole(user?.role);
   };
 
 

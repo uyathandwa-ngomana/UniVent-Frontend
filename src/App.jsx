@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 
 
@@ -11,6 +11,7 @@ import EventDetail from "./pages/student/EventDetail";
 import MyBookings from "./pages/student/MyBookings";
 import TicketView from "./pages/student/TicketView";
 import StudentProfile from "./pages/student/StudentProfile";
+import StudentNotifications from "./pages/student/StudentNotifications";
 
 
 import OrganizerEvents from "./pages/organizer/OrganizerEvents";
@@ -28,13 +29,6 @@ import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
 
 
-/*
- * Gate for authentication. Unauthenticated users are sent to /login.
- *
- * Works both as a wrapper around a single element (children) and as a
- * layout route for a group of nested routes (renders <Outlet /> when no
- * children are provided).
- */
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
 
@@ -42,17 +36,10 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  return children ?? <Outlet />;
+  return children;
 }
 
 
-/*
- * Gate for role-based access. Authenticated users whose role is not in
- * allowedRoles are sent to /unauthorized.
- *
- * Like ProtectedRoute, it supports both a single wrapped element and a
- * nested route group via <Outlet />.
- */
 function RoleRoute({ children, allowedRoles }) {
   const { user } = useAuth();
 
@@ -60,7 +47,7 @@ function RoleRoute({ children, allowedRoles }) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  return children ?? <Outlet />;
+  return children;
 }
 
 /*
@@ -72,10 +59,19 @@ function RoleRoute({ children, allowedRoles }) {
  * /                        → redirect based on role
  * /login                   → Login page (public)
  * /register                → Register page (public)
- * /unauthorized            → 403 page (public)
- * /student/*               → Student route group (protected, STUDENT)
- * /organizer/*             → Organizer route group (protected, ORGANIZER)
- * /admin/*                 → Admin route group (protected, ADMIN)
+ * /student                 → Student event feed
+ * /student/events/:id      → Event detail
+ * /student/bookings        → My bookings
+ * /student/tickets/:id     → Ticket view
+ * /student/profile         → Student profile
+ * /organizer               → Organizer my events
+ * /organizer/events/create → Create event form
+ * /organizer/events/:id/edit          → Edit event form
+ * /organizer/events/:id/registrations → Event registrations
+ * /admin                   → Admin overview dashboard
+ * /admin/events            → All events
+ * /admin/users             → All users
+ * /unauthorized            → 403 page
  * *                        → 404 catch-all
  */
 export default function App() {
@@ -93,48 +89,159 @@ export default function App() {
 
         
         <Route
+          path="/student"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={["STUDENT"]} />
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <StudentEventFeed />
+              </RoleRoute>
             </ProtectedRoute>
           }
-        >
-          <Route path="/student" element={<StudentEventFeed />} />
-          <Route path="/student/events/:id" element={<EventDetail />} />
-          <Route path="/student/bookings" element={<MyBookings />} />
-          <Route path="/student/tickets/:bookingId" element={<TicketView />} />
-          <Route path="/student/profile" element={<StudentProfile />} />
-        </Route>
+        />
+        <Route
+          path="/student/events"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <StudentEventFeed />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/events/:id"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <EventDetail />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/my-events"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <MyBookings />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/bookings"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <MyBookings />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/tickets/:bookingId"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <TicketView />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/notifications"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <StudentNotifications />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/profile"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <StudentProfile />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
 
         
         <Route
+          path="/organizer"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={["ORGANIZER"]} />
+              <RoleRoute allowedRoles={["ORGANIZER"]}>
+                <OrganizerEvents />
+              </RoleRoute>
             </ProtectedRoute>
           }
-        >
-          <Route path="/organizer" element={<OrganizerEvents />} />
-          <Route path="/organizer/events/create" element={<CreateEvent />} />
-          <Route path="/organizer/events/:id/edit" element={<EditEvent />} />
-          <Route
-            path="/organizer/events/:id/registrations"
-            element={<EventRegistrations />}
-          />
-        </Route>
-
-        
+        />
         <Route
+          path="/organizer/events/create"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={["ADMIN"]} />
+              <RoleRoute allowedRoles={["ORGANIZER"]}>
+                <CreateEvent />
+              </RoleRoute>
             </ProtectedRoute>
           }
-        >
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/events" element={<AdminEvents />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-        </Route>
+        />
+        <Route
+          path="/organizer/events/:id/edit"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["ORGANIZER"]}>
+                <EditEvent />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organizer/events/:id/registrations"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["ORGANIZER"]}>
+                <EventRegistrations />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+
+       
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["ADMIN"]}>
+                <AdminDashboard />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/events"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["ADMIN"]}>
+                <AdminEvents />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["ADMIN"]}>
+                <AdminUsers />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
 
         
         <Route path="*" element={<NotFound />} />

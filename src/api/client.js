@@ -24,7 +24,12 @@ client.interceptors.request.use(
 client.interceptors.response.use(
   (response) => response, 
   (error) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url || "";
+    const isPublicAuthRequest = requestUrl.includes("/api/auth/login")
+      || requestUrl.includes("/api/auth/register");
+    const hasSession = Boolean(sessionStorage.getItem("univent_token"));
+
+    if (error.response?.status === 401 && hasSession && !isPublicAuthRequest) {
       // Clear the stale session
       sessionStorage.removeItem("univent_token");
       sessionStorage.removeItem("univent_user");

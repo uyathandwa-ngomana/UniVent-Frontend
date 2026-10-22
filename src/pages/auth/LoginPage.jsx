@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { loginUser } from "../../api/auth";
+import { getHomePathForRole } from "../../context/auth-context";
 
 export default function LoginPage() {
-  const { login, isAuthenticated, getHomePath } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -14,10 +15,10 @@ export default function LoginPage() {
 
   // Safe redirect — runs after render, not during
   useEffect(() => {
-    if (isAuthenticated()) {
-      navigate(getHomePath(), { replace: true });
+    if (user) {
+      navigate(getHomePathForRole(user.role), { replace: true });
     }
-  }, []);
+  }, [navigate, user]);
 
   const validateEmail = (val) => {
     return /^[^\s@]+@[^\s@]+\.ac\.za$/.test(val);
@@ -41,7 +42,7 @@ export default function LoginPage() {
     try {
       const authResponse = await loginUser({ email, password });
       login(authResponse);
-      navigate(getHomePath(), { replace: true });
+      navigate(getHomePathForRole(authResponse.role), { replace: true });
     } catch (err) {
       const message = err.response?.data?.message;
       setError(message || "Something went wrong. Please try again.");

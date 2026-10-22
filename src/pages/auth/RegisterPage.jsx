@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { register } from "../../api/auth";
+import { getHomePathForRole } from "../../context/auth-context";
 
 
 const FACULTY_DEPARTMENTS = {
@@ -85,15 +86,15 @@ const selectClass =
 
 
 export default function RegisterPage() {
-  const { login, isAuthenticated, getHomePath } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
 
   
   useEffect(() => {
-    if (isAuthenticated()) {
-      navigate(getHomePath(), { replace: true });
+    if (user) {
+      navigate(getHomePathForRole(user.role), { replace: true });
     }
-  }, []);
+  }, [navigate, user]);
 
 
   const [role, setRole] = useState("STUDENT");
@@ -212,7 +213,7 @@ export default function RegisterPage() {
     try {
       const authResponse = await register(payload);
       login(authResponse);
-      navigate(getHomePath(), { replace: true });
+      navigate(getHomePathForRole(authResponse.role), { replace: true });
     } catch (err) {
       const message = err.response?.data?.message;
       setError(message || "Something went wrong. Please try again.");
